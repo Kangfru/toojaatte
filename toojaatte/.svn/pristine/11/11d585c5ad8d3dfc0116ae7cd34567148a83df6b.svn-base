@@ -1,0 +1,49 @@
+package com.toojaatte.vm.controller;
+
+import static com.toojaatte.vm.api.VmApiTest.VmAPI;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.toojaatte.vm.api.CandleStickApi;
+import com.toojaatte.vm.dto.VmDTO;
+import com.toojaatte.vm.service.VmService;
+
+@Controller
+@RequestMapping("/vm")
+public class VmController {
+	
+	@Autowired
+	@Qualifier("vc")
+	private VmService service;
+	
+	public static String[] coinName = {"XEM","BZNT","CTXC","WTC",
+										"FZZ","XVG","IPX","FLETA",
+										"STEEM","NPXS","AION","ZRX",
+										"BCD","AE","BSV","IOST","BCH",
+										"OMG","BTC",};
+
+	// @RequestParam String code, 
+	@GetMapping("/view.do")
+	public String view(Model model) {
+		model.addAttribute("vmdata",VmAPI());
+		model.addAttribute("cm",coinName);
+		CandleStickApi.candleAPI(null);
+		
+		return "vm/view";
+	}
+	
+	@PostMapping("/insert.do")
+	public String write (VmDTO dto) {
+		// /WEB-INF/views/ + vm +/write + .jsp
+		service.write(dto);
+		return "vm/insert";
+	}
+	
+	
+}

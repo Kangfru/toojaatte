@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.toojaatte.news.mapper.NewsCommentMapper">
+
+	<select id="nCommentList" parameterType="hashMap" resultType="com.toojaatte.news.dto.News_repDTO">
+		SELECT * FROM(
+			SELECT rownum rnum, rno, nno, content, id, write_date, like_cnt, dislike_cnt, photo, nickName
+			FROM(
+				SELECT n.rno, n.nno, n.content, n.write_date, n.like_cnt, n.dislike_cnt, m.id, m.photo, m.nickName
+				FROM news_rep n, member m
+				WHERE (nno = #{nno}) and (n.id = m.id)
+				ORDER BY rno DESC
+			)
+		)
+		WHERE rnum between #{pageObject.startRow} and #{pageObject.endRow}
+	</select>
+
+	<select id="getTotalRow" resultType="java.lang.Integer">
+		SELECT COUNT(*) 
+		FROM news_rep
+		WHERE nno = #{nno}
+	</select>
+	
+	<select id="myLikeList" resultType="com.toojaatte.news.dto.News_rep_likeDTO">
+		SELECT rno, nno, id, likeDislike
+		FROM news_rep_like
+		WHERE (nno = #{nno}) and (id = #{id})
+		ORDER BY rno DESC
+	</select>
+
+
+	<insert id="commentInsert">
+		INSERT INTO news_rep (rno, nno, content, id) VALUES
+		(news_rep_seq.nextval, #{nno}, #{content}, #{id})
+	</insert>
+
+	<update id="commentUpdate"
+		parameterType="com.toojaatte.news.dto.News_repDTO">
+		UPDATE news_rep SET content = #{content}
+		WHERE rno = #{rno}
+	</update>
+
+	<delete id="commentDelete" parameterType="int">
+		DELETE FROM news_rep WHERE rno = #{rno}
+	</delete>
+	
+	<!-- 좋아요여부확인 -->
+	<select id="ifAlreadyLike" parameterType="com.toojaatte.news.dto.News_rep_likeDTO"
+	resultType="com.toojaatte.news.dto.News_rep_likeDTO">
+		SELECT rno, nno, id, likeDislike 
+		FROM news_rep_like WHERE (nno = #{nno}) AND (rno = #{rno}) and (id = #{id}) 
+	</select>
+	
+	<!-- 좋아요 싫어요 삭제 -->
+	<delete id="cancelLike" parameterType="com.toojaatte.news.dto.News_rep_likeDTO">
+		DELETE FROM news_rep_like WHERE (nno = #{nno}) AND (rno = #{rno}) and (id = #{id})
+	</delete>
+	
+	<!-- 좋아요: 0, 싫어요:1 추가 -->
+	<insert id="insertLike">
+		INSERT INTO news_rep_like (lno, rno, nno, id, likeDislike) VALUES
+		(news_rep_like_seq.nextval, #{rno}, #{nno}, #{id}, #{likeDislike})
+	</insert>
+	
+	<!-- 좋아요 총개수 1증가 -->
+	<update id="incTotalLike"
+		parameterType="com.toojaatte.news.dto.News_rep_likeDTO">
+		UPDATE news_rep SET like_cnt = like_cnt + 1
+		WHERE (nno=#{nno}) AND (rno=#{rno})
+	</update>
+
+	<!-- 싫어요 총개수 1증가 -->
+	<update id="incTotalDislike"
+		parameterType="com.toojaatte.news.dto.News_rep_likeDTO">
+		UPDATE news_rep SET dislike_cnt = dislike_cnt + 1
+		WHERE (nno=#{nno}) AND (rno=#{rno})
+	</update>
+
+	<!-- 좋아요 총개수 1감소 -->
+	<update id="decTotalLike"
+		parameterType="com.toojaatte.news.dto.News_rep_likeDTO">
+		UPDATE news_rep SET like_cnt = like_cnt - 1
+		WHERE (nno=#{nno}) AND (rno=#{rno})
+	</update>
+
+	<!-- 싫어요 총개수 1감소 -->
+	<update id="decTotalDislike"
+		parameterType="com.toojaatte.news.dto.News_rep_likeDTO">
+		UPDATE news_rep SET dislike_cnt = dislike_cnt - 1
+		WHERE (nno=#{nno}) AND (rno=#{rno})
+	</update>
+	
+	
+</mapper>

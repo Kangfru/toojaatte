@@ -1,0 +1,60 @@
+package com.toojaatte.vm.controller;
+
+import static com.toojaatte.vm.api.VmApiTest.VmAPI;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.toojaatte.vm.api.CandleStickApi2;
+import com.toojaatte.vm.dto.VmDTO;
+import com.toojaatte.vm.service.VmService;
+
+@Controller
+@RequestMapping("/vm2")
+public class Vm2Controller {
+	
+	@Autowired
+	@Qualifier("vc")
+	private VmService service;
+	
+	public static String[] coinName = {"XEM","BZNT","CTXC","WTC",
+										"FZZ","XVG","IPX","FLETA",
+										"STEEM","NPXS","AION","ZRX",
+										"BCD","AE","BSV","IOST","BCH",
+										"OMG","BTC",};
+
+	// @RequestParam String code, 
+	@GetMapping("/view.do")
+	public String view(Model model) {
+		System.out.println("Vm2Controller.view()");
+//		model.addAttribute("vmdata",VmAPI());
+//		model.addAttribute("cm",coinName);
+//		CandleStickApi2.candleAPI(null);
+		List<VmDTO> list = CandleStickApi2.candleAPI(null);		
+		int i = 0;
+		for (i =0; i < list.size(); i++ ) {
+			service.write(list.get(i));
+		}
+		return "vm/view";
+	}
+	
+	
+	
+	
+	@GetMapping("/insert.do")
+	public String write (VmDTO dto) {
+		// /WEB-INF/views/ + vm +/write + .jsp
+		service.write(dto);
+		return "vm/insert";
+	}
+	
+	
+}

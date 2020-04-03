@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.toojaatte.stock.mapper.StockMapper">
+
+	<select id="search" resultType="com.toojaatte.stock.dto.StockKRXDTO">
+		SELECT code, market, name, sector, industry, listingDate
+		FROM krx_list
+		WHERE code LIKE '%' || #{searchData} || '%'
+		OR name LIKE '%' || #{searchData} || '%'
+	</select>
+	
+	<select id="prediction" resultType="com.toojaatte.stock.dto.PredictionDTO">
+		SELECT code, name, prediction
+		FROM stockPrediction
+	</select>
+
+</mapper>

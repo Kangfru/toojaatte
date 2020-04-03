@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace 설정 : 중복을 배제시키기 위해서 -->
+<mapper namespace="com.toojaatte.anaboard.mapper.AnaBoardMapper">
+ <select id="mainList" resultType="com.toojaatte.anaboard.dto.AnaBoardDTO">
+ 	select * from (
+ 		select rownum rnum, no, grade, title, titleType, writer, writeDate,
+ 			 hit, reply_cnt, r_cnt, n_cnt
+ 		from (
+ 			select a.no, m.grade, a.title, a.titleType, a.writer, a.writeDate,
+ 			 a.hit, a.reply_cnt, a.r_cnt, a.n_cnt
+ 			from anaboard a, member m
+ 			where (a.writer = m.id)
+ 			order by r_cnt desc, title desc
+ 		) 
+ 	) where rnum between 1 and 5
+ </select>
+ 
+ <!-- id는 mapper 인터페이스의 메서드와 맞춰준다. -->
+ <select id="list" resultType="com.toojaatte.anaboard.dto.AnaBoardDTO">
+ 	select * from (
+ 		select rownum rnum, no, grade, title, titleType, writer, writeDate,
+ 			 hit, reply_cnt, r_cnt, n_cnt
+ 		from (
+ 			select a.no, m.grade, a.title, a.titleType, a.writer, a.writeDate,
+ 			 a.hit, a.reply_cnt, a.r_cnt, a.n_cnt
+ 			from anaboard a, member m
+ 			where (a.writer = m.id)
+<!--  			<if test="(word != null and word != ''.toString()) -->
+<!--  			or (gradeType != null and gradeType != ''.toString())  -->
+<!--  			or (orderType != null and orderType != ''.toString())"> -->
+<!--  				where  -->
+<!--  			</if> -->
+ 			<if test="word != null and word != ''.toString()">
+ 				and (1=0
+	 			<include refid="searchCondition"/>
+	 			)
+ 			</if>
+<!--  			<if test="gradeType != null and gradeType != ''.toString()"> -->
+<!--  				and  -->
+<!--  			</if> -->
+ 			<if test="(gradeType != null and gradeType != ''.toString())">
+	 			and (1=1 
+	 			<if test='gradeType == "b"'>
+	 			and m.grade = 8
+	 			</if>
+	 			)
+ 			</if>
+<!--  			<if test="headerType != null and headerType != ''.toSting()"> -->
+<!--  				and  -->
+<!--  			</if> -->
+ 			<if test="(headerType != null and headerType != ''.toString())
+ 			or headerType != 'all'">
+	 			and (1=1 
+	 			<if test='headerType == "real"'>
+	 			and a.titleType = 1
+	 			</if>
+	 			<if test='headerType == "fake"'>
+	 			and a.titleType = 2
+	 			</if>
+	 			<if test='headerType == "etc"'>
+	 			and a.titleType = 3
+	 			</if>
+	 			)
+ 			</if>
+ 			order by
+ 			<if test='orderType == null or orderType == "".toString() or orderType=="h"'>
+ 				no desc
+ 			</if>
+ 			<if test='orderType != null or orderType != "".toString()'>
+ 				<if test='orderType == "rn"'>
+ 				r_cnt desc, title desc
+ 				</if>
+ 			</if>
+ 		)
+ 	)
+ 	where rnum between #{startRow} and #{endRow}
+ </select>
+
+<select id="tract" resultType="com.toojaatte.anaboard.dto.AnaBoardDTO">
+ 	select * from (
+ 		select rownum rnum, no, grade, title, titleType, content, writer, writeDate,
+ 			 hit, reply_cnt, r_cnt, n_cnt
+ 		from (
+ 			select a.no, m.grade, a.title, a.titleType, a.content, a.writer, a.writeDate,
+ 			 a.hit, a.reply_cnt, a.r_cnt, a.n_cnt
+ 			from anaboard a, member m
+ 			where (a.writer = m.id) and 
+ 			( a.writeDate between #{startDate} and #{endDate} )
+ 			 order by no desc
+ 		)
+ 	)
+ </select>
+ 
+ <select id="getTotalRow" resultType="java.lang.Integer">
+ 	select count(*)
+ 	from anaboard
+ 	<!-- mybatis에서 문자열이나 문자 데이터는 "'"을 사용하는데 글자가 하나인 경우 char로 취급  -->
+ 	<!-- 그래서 .toString()을 하면 문자열로 변환된다 -->
+ 	<!-- word 프로퍼티가 null이나 "" 가 아니면 검색한다. -->
+	<if test="word != null and word != ''.toString()">
+		where (1=0 
+		<include refid="searchCondition"/>
+		)
+	</if>
+ </select>
+ 
+ <!-- 검색에 필요한 조건 : 재활용, 복잡함 -->
+ <sql id="searchCondition">
+	 <!-- key가 들어가 있으면 인덱스(0 이상)의 수가 나오므로.. -->
+	 <!-- 오라클의 문자열 합치기 || 를 사용하여 연결 -->
+ 	<if test='key.indexOf("t") >= 0 or (key == null or key == "".toString())'>
+ 		or title like '%' || #{word} || '%'  
+ 	</if>
+<!--  	<if test="key.indexOf('t') >= 0 and key.indexOf('c') >= 0"> -->
+<!--  		or -->
+<!--  	</if> -->
+ 	<if test="key.indexOf('c') >= 0">
+ 		or content like '%' || #{word} || '%'  
+ 	</if>
+<!--  	<if test="(key.indexOf('t') >= 0 or key.indexOf('c') >= 0) -->
+<!--  	and key.indexOf('w') >= 0"> -->
+<!--  		or -->
+<!--  	</if> -->
+ 	<if test="key.indexOf('w') >= 0">
+ 		or writer like '%' || #{word} || '%'  
+ 	</if>
+ </sql>
+
+ 
+ <!-- 게시판 글쓰기 처리 -->
+ <insert id="write">
+ 	insert into anaboard(no, title, titleType, content, writer)
+ 	values(anaboard_seq.nextval, #{title}, #{titleType},
+ 	 #{content}, #{writer})
+ </insert>
+ <insert id="writeFile">
+ 	insert into anaboard_file(rno, no, fileName, ori_fileName)
+ 	values(anaboard_file_seq.nextval, anaboard_seq.currval,
+ 	 #{fileName}, #{ori_fileName})
+ </insert>
+ 
+ <!-- 게시판 글보기 -->
+ <select id="view" resultType="com.toojaatte.anaboard.dto.AnaBoardDTO">
+ 	select no, titleType, title, content, writer, writeDate,
+ 	 hit, reply_cnt, r_cnt, n_cnt
+ 	from anaboard
+ 	where no = #{no}
+ </select>
+ 
+<!--  추천 비추천 /확인-->
+<select id="checkRorN" resultType="java.lang.Integer">
+ 	select type
+ 	from RorN
+ 	where writer = #{writer} and no = #{no}
+ </select>
+
+<!--  추천 비추천 /최초 생성시-->
+ <insert id="startRorN">
+ 	insert into RorN(writer, no, type)
+ 	values(#{writer},#{no},#{type})
+ </insert>
+
+<!--  추천 비추천 /기존에 등록했을 경우-->
+  <update id="changeRorN">
+ 	update RorN set type = #{type}
+ 	where writer = #{writer} and no = #{no}
+ </update>
+
+<!--  추천 비추천 /해제했을 경우-->
+ <delete id="endRorN">
+ 	delete from RorN
+ 	where no = #{no} and writer = #{writer}
+ </delete>
+ 
+ <!-- 추천수 -->
+<!-- 카운트 업데이트 되면 ajax로 다시 보내려고.. -->
+ <select id="countRorN" resultType="com.toojaatte.anaboard.dto.AnaBoardDTO">
+ 	select r_cnt, n_cnt
+ 	from anaboard
+ 	where no = #{no}
+ </select>
+ <update id="increaseR_cnt">
+ 	update anaboard set r_cnt = r_cnt + 1
+ 	where no = #{no}
+ </update>
+ <update id="decreaseR_cnt">
+ 	update anaboard set r_cnt = r_cnt - 1
+ 	where no = #{no}
+ </update>
+ <update id="increaseN_cnt">
+ 	update anaboard set n_cnt = n_cnt + 1
+ 	where no = #{no}
+ </update>
+ <update id="decreaseN_cnt">
+ 	update anaboard set n_cnt = n_cnt - 1
+ 	where no = #{no}
+ </update>
+ 
+ <!-- 게시판 글보기하면 자동으로 조회수가 1증가되도록 해야한다. -->
+ <update id="increaseHit">
+ 	update anaboard set hit = hit + 1
+ 	where no = #{no}
+ </update>
+ 
+ <!-- 게시판 글수정  : 본인이 작성한 글만 수정가능 -->
+ <update id="update">
+ 	update anaboard
+ 	set titleType = #{titleType}, title = #{title}, content = #{content}
+ 	where no = #{no} <!-- and writer = #{writer} -->
+ </update>
+ <insert id="updateFile">
+ 	insert into anaboard_file(rno, no, fileName, ori_fileName)
+ 	values(anaboard_file_seq.nextval, #{no},
+ 	 #{fileName}, #{ori_fileName})
+ </insert>
+ 
+ <!-- 게시판 글삭제 -->
+ <delete id="delete">
+ 	delete from anaboard
+ 	where no = #{no} <!-- and writer = #{writer}-->
+ </delete>
+ 
+ <!-- 게시판 첨부파일 삭제 -->
+ <select id="selectFile" resultType="com.toojaatte.anaboard.dto.AnaBoard_FileDTO">
+ 	select rno, fileName, ori_fileName
+ 	from anaboard_file
+ 	where no = #{no}
+ </select>
+ <select id="selectFileOne" resultType="java.lang.String">
+ 	select fileName from
+ 	anaboard_file
+ 	where rno = #{rno}
+ </select>
+ <delete id="deleteFileOne">
+ 	delete from anaboard_file
+ 	where rno = #{rno}
+ </delete>
+ <delete id="deleteFileAll">
+ 	delete from anaboard_file
+ 	where no = #{no}
+ </delete>
+ 
+</mapper>

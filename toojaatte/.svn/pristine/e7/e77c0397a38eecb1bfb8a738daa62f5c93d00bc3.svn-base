@@ -1,0 +1,58 @@
+@charset "UTF-8";
+.title-div {
+	margin: auto;
+}
+
+.stock-name {
+	font-size: xx-large;
+	color: #333333;
+}
+
+.table-name {
+	font-size: x-large;
+}
+
+table, th {
+	text-align: center;
+	margin: auto;
+}
+
+.info-title {
+	font-size: x-large;
+}
+
+ul {
+	list-style: none;
+}
+
+.up {
+	color: #eb8787;
+}
+
+.down {
+	color: #687de3;
+}
+
+.now-price {
+	font-size: xx-large;
+}
+
+.small-text {
+	font-size: medium;
+}
+
+.topSell {
+	background-color: #abe4fb;
+}
+
+.topBuy {
+	background-color: #f4b1a9;
+}
+
+.sell {
+	background-color: #87ceeb;
+}
+
+.buy {
+	background-color: #eb8787;
+}

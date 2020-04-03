@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<!-- 여기에 sql 작성  -->
+<!-- namespace 설정 : 중복을 배제시키기 위해서  -->
+<mapper namespace="com.toojaatte.vm.mapper.VmMapper">
+ 
+  <!-- id는 mapper 인터페이스의 메서드와 맞춰준다. --> 
+  <select id="list" resultType="com.toojaatte.vm.dto.VmDTO">
+	select no, cName, opening_p, closing_p, cTime, updateDate
+	from vm
+	order by cName, cTime
+  </select>
+  
+  <insert id="write">
+  	insert into vm (no, cName, opening_p, closing_p, cTime)
+  	values(vm_seq.nextval, #{cName},#{opening_p},#{closing_p},#{cTime})
+  </insert>
+
+	<delete id="deleteAll">
+		delete from vm
+	</delete>    
+    
+    <!-- 게시판 글보기  -->
+  <select id="view" resultType="com.toojaatte.vm.dto.VmDTO">
+  	select no, title, content, writer, writeDate, hit from board 
+  	where no = #{no}
+  </select>
+  
+  <!-- 검색에 필요한 조건 : 재활용, 복잡함  -->
+  <sql id="searchCondition">
+  
+  <!-- mybatis에서 문자열이나 문자데이터는 "'" 사용하는데 글자가 하나인 경우 char로 취급한다. 
+  		그래서 .toString()을 사용해서 문자열로 변환한다. -->
+  	<if test="key.toString().indexOf('t') >= 0">
+  		or title like '%'|| #{word} || '%'
+  	</if>
+ 
+  	<if test="key.toString().indexOf('c') >= 0">
+  		or content like '%'|| #{word} || '%'
+  	</if>
+ 
+  	<if test="key.toString().indexOf('w') >= 0">
+  		or writer like '%'|| #{word} || '%'
+  	</if>
+ 
+  </sql>
+ 
+</mapper>

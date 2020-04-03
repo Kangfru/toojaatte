@@ -1,0 +1,72 @@
+package com.toojaatte.vm.api;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+import com.toojaatte.vm.controller.VmController;
+
+
+public class CandleStickApi {
+	
+	public static Map<String, Map> candleAPI(String cname) {
+		
+//		Map<String, Double> itemMap = new HashMap<>();
+		// <Map key, itemMap>
+		Map<String, Map> coinMap = new HashMap<>();
+		
+      
+		
+		BufferedReader br = null;
+		String result = "";
+		
+		try {
+			for (String s: VmController.coinName) {
+				
+				String urlstr = "https://api.bithumb.com/public/candlestick/BTC_KRW/24h";
+				System.out.println(urlstr);
+				URL url = new URL(urlstr);
+				HttpURLConnection urlconnection = (HttpURLConnection)url.openConnection();
+				urlconnection.setRequestMethod("GET");
+				br = new BufferedReader(new InputStreamReader(urlconnection.getInputStream(),"UTF-8"));
+				String line;
+				
+				while((line = br.readLine())!=null) {
+					result = result + line;	
+				}
+//				System.out.println(result);
+				
+			}
+			
+//			System.out.println(result);
+            
+			JSONParser jsonParser = new JSONParser();
+            
+            //JSON데이터를 넣어 JSON Object 로 만들어 준다.
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(result);
+//            System.out.println(jsonObject);
+            	  
+           
+            Object data = jsonObject.get("data");
+           
+            System.out.println(data);
+
+		}catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+	
+		return coinMap;
+	}
+	 
+}

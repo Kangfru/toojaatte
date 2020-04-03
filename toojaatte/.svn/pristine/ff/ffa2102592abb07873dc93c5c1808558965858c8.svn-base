@@ -1,0 +1,32 @@
+package com.toojaatte.vm.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import static com.toojaatte.vm.api.VmApiTest.VmAPI;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+import java.util.Map;
+
+@Controller
+@RequestMapping("/vm")
+public class VmController {
+
+	// @RequestParam String code, 
+	@GetMapping("/view.do")
+	public String view(Model model) {
+		String[] coinName = {"XEM","BZNT","CTXC","WTC","FZZ","XVG","IPX","FLETA",
+				"STEEM","NPXS","AION","ZRX","BCD","AE","BSV","IOST","BCH","OMG","BTC",
+				"FCT","MIX","POWR","HDAC","KNC","BTT","WET","ANKR","GNT","ORBS","HYC",
+				"MBL","SNT","PIVX","CON","DAD","SOC","COS","DAC","QKC","QBZ","WAXP","GXC",
+				"WOM","ETC","OGO","ETH","MCO","ZEC","ITC","FNB","LRC","REP","ELF","ADA","VALOR","ICX"};
+		model.addAttribute("vmdata",VmAPI());
+		model.addAttribute("cm",coinName);
+		return "vm/view";
+	}
+	
+}

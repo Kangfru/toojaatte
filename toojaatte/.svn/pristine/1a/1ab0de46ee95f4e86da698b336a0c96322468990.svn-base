@@ -1,0 +1,51 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<!--<div class="container">-->
+	<h1>데이터 업데이트 </h1>
+	<form action="insert.do" method="post">
+		<!-- bootstrap폼을 사용 하려면 form -> form-group -> form-control 이 있어야한다. -->
+		<!-- 제목 입력 -->
+		<div >
+			${dto.cName }
+		
+		</div>
+
+		<div >
+			${dto.opening_p }
+			
+		</div>
+
+		
+		<div>
+			${dto.closing_p}
+			
+		</div>
+
+		<div>
+			${dto.closing_p}
+			
+		</div>
+
+		<div>
+			${dto.cTime}
+			
+		</div>
+		
+		
+		
+		<button>등록</button>
+		<button type="reset">다시입력</button>
+		<button class="cancelBtn" type="button">취소</button>
+
+
+	</form>
+<!-- </div>-->
+</body>
+</html>

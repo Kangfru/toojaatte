@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace 설정 : 중복을 배제시키기 위해서 -->
+<mapper namespace="com.toojaatte.member.mapper.MemberMapper">
+	<!-- id는 mapper 인터페이스의 메서드와 맞춰준다. -->
+	<select id="login" resultType="com.toojaatte.member.dto.LoginDTO">
+		SELECT m.id, m.pw, m.nickName, m.grade, g.gradeName, m.state, s.stateName, m.photo 
+		FROM member m, grade g, state s
+		WHERE (m.id = #{id} and m.pw = #{pw}) AND (m.grade = g.grade) AND (m.state = s.state )
+	</select>
+
+	<select id="idCheck" resultType="java.lang.String">
+		SELECT id
+		FROM member
+		WHERE id = #{id}
+	</select>
+
+	<insert id="signIn">
+		INSERT INTO member(id, pw, addr, tel, email, question, answer, nickname) 
+		VALUES (#{id}, #{pw} , #{addr}, #{tel}, #{email}, #{question}, #{answer}, #{nickName})
+	</insert>
+	
+	<update id="signOut">
+		UPDATE member 
+		SET state = 3 
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findId" resultType="java.lang.String">
+		SELECT id 
+		FROM member 
+		WHERE email = #{email}	
+	</select>
+
+	<select id="findPw" resultType="java.lang.String">
+		SELECT pw 
+		FROM member 
+		WHERE email = #{email} and id = #{id}	
+	</select>
+	
+	<select id="getQuestionAndAnswer" resultType="com.toojaatte.member.dto.MemberDTO">
+		SELECT question, answer, id, email
+		FROM member
+		WHERE id = #{id}
+	</select>
+	
+	<update id="update">
+		UPDATE member 
+		SET addr = #{addr}, tel = #{tel}, email = #{email}, photo = #{photo} 
+		WHERE id = #{id}
+	</update>
+
+</mapper>

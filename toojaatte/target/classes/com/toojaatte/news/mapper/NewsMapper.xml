@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.toojaatte.news.mapper.NewsMapper">
+	<insert id="insert" parameterType="com.toojaatte.news.dto.NewsDTO">
+		INSERT INTO news(
+			nno, url, press, title, content, write_date
+		) VALUES (
+			news_seq.nextval, #{url}, #{press}, #{title}, #{content}, #{write_date} 
+		)
+	</insert>
+
+	<select id="list" resultType="com.toojaatte.news.dto.NewsDTO">
+		
+		SELECT * FROM(
+			SELECT rownum rnum, nno, title, press, url, write_date, content, hit, rep_cnt, like_cnt
+			FROM(
+				SELECT nno, title, press, url, write_date, content, hit, rep_cnt, like_cnt
+				FROM news
+				<if test="word != null and word!=''.toString()">
+					WHERE <include refid="searchCondition"></include>
+				</if>		
+				ORDER BY nno DESC
+			)
+		)
+		WHERE rnum between #{startRow} and #{endRow}
+	</select>
+
+	<select id="getTotalRow" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM news
+			<if test="word != null and word != ''.toString()">
+				WHERE <include refid="searchCondition"></include>
+			</if>
+	</select>
+
+	<sql id="searchCondition" >
+		title LIKE '%' || #{word} || '%'
+		OR content LIKE '%' || #{word} || '%'
+		OR press LIKE '%' || #{word} || '%'
+	</sql>	
+	
+	
+	<select id="view" resultType="com.toojaatte.news.dto.NewsDTO">
+		SELECT nno, url, press, title, content, write_date, hit, rep_cnt, like_cnt
+		FROM news 
+		WHERE nno = #{nno}
+	</select>
+	
+	<update id="increaseHit">
+		UPDATE news SET hit = hit + 1 
+		WHERE nno = #{nno}
+	</update>
+	
+	<!-- 많이본뉴스5개 -->
+	<select id="mostViewed" resultType="com.toojaatte.news.dto.NewsDTO">
+	SELECT * FROM(
+		SELECT rownum rnum, nno, url, press, title, content, write_date, hit, rep_cnt, like_cnt
+		FROM(
+			SELECT nno, url, press, title, content, write_date, hit, rep_cnt, like_cnt
+			FROM news
+			ORDER BY hit DESC
+		)
+	) WHERE rnum BETWEEN 1 AND 5
+	</select>
+
+	<!-- 인기검색어 10개 -->
+	<select id="mostSearched" resultType="com.toojaatte.news.dto.News_searchDTO">
+	SELECT * FROM(
+		SELECT rownum rnum, sno, search_cnt, word, search_date
+		FROM (
+			SELECT sno, search_cnt, word, search_date
+			FROM news_search
+			ORDER BY search_cnt DESC		
+		)
+	) WHERE rnum BETWEEN 1 AND 5
+	</select>
+	
+	<!-- 검색시 검색어 저장 -->
+	<insert id="saveWord" >
+	INSERT INTO news_search(sno, word)
+	SELECT news_search_seq.nextval, #{word} FROM DUAL
+	WHERE NOT EXISTS(SELECT word FROM news_search WHERE word = #{word})
+	</insert>
+	
+	<!-- 검색시 검색수 1증가 -->
+	<update id="increaseSearch_cnt">
+		UPDATE news_search SET search_cnt = search_cnt + 1
+		WHERE word = #{word}
+	</update>
+
+	
+</mapper>
